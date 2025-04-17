@@ -1,0 +1,34 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - apiKey
+    properties:
+      apiKey:
+        type: string
+        description: Your fal.ai API key (FAL_KEY)
+      imagesOutputDir:
+        type: string
+        default: ""
+        description: Optional output dir for images (FAL_IMAGES_OUTPUT_DIR)
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => {
+      const env = { FAL_KEY: config.apiKey };
+      if (config.imagesOutputDir) {
+        env.FAL_IMAGES_OUTPUT_DIR = config.imagesOutputDir;
+      }
+      return {
+        command: 'node',
+        args: ['build/index.js'],
+        env,
+      };
+    }
+  exampleConfig:
+    apiKey: YOUR_FAL_API_KEY
+    imagesOutputDir: /home/user/Pictures/fal_images

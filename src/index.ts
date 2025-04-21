@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/**
+ * This server is intended exclusively for use as a Model Context Protocol (MCP) server.
+ * Do not use as an HTTP or CLI server.
+ * For protocol details, see: https://modelcontextprotocol.io
+ */
+
 import { fal } from '@fal-ai/client';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -53,7 +59,7 @@ function ensureDownloadDir() {
 }
 
 // Function to download an image
-async function downloadImage(url: string, prompt: string): Promise<string> {
+async function downloadImage(url: string, prompt: string, idx?: number): Promise<string> {
   ensureDownloadDir();
 
   // Generate a filename from the prompt and timestamp
@@ -62,7 +68,7 @@ async function downloadImage(url: string, prompt: string): Promise<string> {
     .slice(0, 30)
     .replace(/[^a-z0-9]/gi, '_')
     .toLowerCase();
-  const filename = `${sanitizedPrompt}_${timestamp}.png`;
+  const filename = `${sanitizedPrompt}_${timestamp}${typeof idx === 'number' ? `_${idx + 1}` : ''}.png`;
   const filepath = path.join(FAL_IMAGES_DIR, filename);
 
   try {
@@ -177,7 +183,7 @@ export async function generateImageFromText(
       const downloadedImages = await Promise.all(
         result.data.images.map(async (img: any, idx: number) => {
           try {
-            const localPath = await downloadImage(img.url, prompt);
+            const localPath = await downloadImage(img.url, prompt, idx);
             console.error(`Image #${idx + 1} saved to: ${localPath}`);
             return { ...img, localPath };
           } catch (error) {

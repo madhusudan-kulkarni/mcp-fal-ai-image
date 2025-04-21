@@ -2,7 +2,6 @@
 
 /**
  * This server is intended exclusively for use as a Model Context Protocol (MCP) server.
- * Do not use as an HTTP or CLI server.
  * For protocol details, see: https://modelcontextprotocol.io
  */
 
@@ -25,11 +24,10 @@ type ImageSize =
   | 'landscape_4_3'
   | 'landscape_16_9';
 
-// Save images in <output_dir>/fal_ai
-// - If FAL_IMAGES_OUTPUT_DIR env var is set, use that as base directory
-// - Otherwise, default to process.cwd() (directory where process is started)
-// This ensures distributed teams and orchestrators can control output location.
-// Save images in the user's default Downloads folder (XDG standard or ~/Downloads)
+/**
+ * Determines the default Downloads directory for the user, following XDG standards if available.
+ * Used to determine where to save generated images if no custom output dir is set.
+ */
 function getDefaultDownloadsDir() {
   // Try XDG_DOWNLOAD_DIR from user-dirs.dirs, else fallback to ~/Downloads
   const home = process.env.HOME || process.env.USERPROFILE;
@@ -50,7 +48,10 @@ const FAL_IMAGES_DIR = process.env.FAL_IMAGES_OUTPUT_DIR
   ? path.join(process.env.FAL_IMAGES_OUTPUT_DIR, 'fal_ai')
   : path.join(getDefaultDownloadsDir(), 'fal_ai');
 
-// Ensure the download directory exists
+/**
+ * Ensures that the download directory exists, creating it if necessary.
+ * This function is called before saving images to disk.
+ */
 function ensureDownloadDir() {
   if (!fs.existsSync(FAL_IMAGES_DIR)) {
     fs.mkdirSync(FAL_IMAGES_DIR, { recursive: true });
@@ -58,8 +59,20 @@ function ensureDownloadDir() {
   }
 }
 
-// Function to download an image
-async function downloadImage(url: string, prompt: string, idx?: number): Promise<string> {
+/**
+ * Downloads an image from a given URL and saves it to the output directory.
+ * Filenames are generated from the prompt, timestamp, and (if present) image index for uniqueness.
+ *
+ * @param url - The URL of the image to download.
+ * @param prompt - The text prompt used for the image (used for filename).
+ * @param idx - Optional index for batch downloads (appended to filename).
+ * @returns The local file path where the image was saved.
+ */
+async function downloadImage(
+  url: string,
+  prompt: string,
+  idx?: number
+): Promise<string> {
   ensureDownloadDir();
 
   // Generate a filename from the prompt and timestamp
@@ -68,7 +81,9 @@ async function downloadImage(url: string, prompt: string, idx?: number): Promise
     .slice(0, 30)
     .replace(/[^a-z0-9]/gi, '_')
     .toLowerCase();
-  const filename = `${sanitizedPrompt}_${timestamp}${typeof idx === 'number' ? `_${idx + 1}` : ''}.png`;
+  const filename = `${sanitizedPrompt}_${timestamp}${
+    typeof idx === 'number' ? `_${idx + 1}` : ''
+  }.png`;
   const filepath = path.join(FAL_IMAGES_DIR, filename);
 
   try {
@@ -98,6 +113,10 @@ if (process.env.FAL_KEY) {
 }
 
 // Top 10 supported text-to-image models
+/**
+ * List of recommended/supported model IDs for quick reference.
+ * Users are not restricted to these models; any valid fal.ai model ID can be used.
+ */
 export const SUPPORTED_MODELS = [
   {
     id: 'fal-ai/recraft-v3',
@@ -142,6 +161,20 @@ export const SUPPORTED_MODELS = [
 ];
 
 // Example: Text to Image with model selection
+/**
+ * Generates images from a text prompt using fal.ai, with full support for dynamic model selection.
+ *
+ * @param prompt - The text description for the image.
+ * @param imageSize - The desired image size (default: landscape_4_3).
+ * @param numInferenceSteps - Number of inference steps (default: 28).
+ * @param guidanceScale - Guidance scale for generation (default: 3.5).
+ * @param numImages - Number of images to generate (default: 1).
+ * @param enableSafetyChecker - Whether to enable the safety checker (default: true).
+ * @param model - The model ID to use (default: SUPPORTED_MODELS[0].id). Can be any valid fal.ai model ID.
+ * @returns The API result, including image URLs and local paths.
+ *
+ * Dynamic model support: If the model is not in SUPPORTED_MODELS, a warning is logged but generation proceeds. If the model is invalid, a backend error is returned.
+ */
 export async function generateImageFromText(
   prompt: string,
   imageSize: ImageSize = 'landscape_4_3',
@@ -151,12 +184,51 @@ export async function generateImageFromText(
   enableSafetyChecker = true,
   model: string = SUPPORTED_MODELS[0].id // default to first model
 ) {
-  // Validate model
+  // --- Pre-validation and user guidance ---
+  // 1. Prompt required
+  if (!prompt || !prompt.trim()) {
+    throw new Error(
+      'Prompt is required. Please describe the image you want to generate. Example: generate an image of a red apple'
+    );
+  }
+  // 2. Image size validation
+  const SUPPORTED_SIZES = [
+    'square_hd',
+    'square',
+    'portrait_4_3',
+    'portrait_16_9',
+    'landscape_4_3',
+    'landscape_16_9',
+  ];
+  if (imageSize && !SUPPORTED_SIZES.includes(imageSize)) {
+    throw new Error(
+      `Error: '${imageSize}' is not a supported image size.\nSupported sizes: ${SUPPORTED_SIZES.join(
+        ', '
+      )}`
+    );
+  }
+  // 3. Batch size validation
+  const MAX_IMAGES = 5;
+  if (numImages > MAX_IMAGES) {
+    throw new Error(
+      `Error: Maximum number of images per request is ${MAX_IMAGES}. Please request ${MAX_IMAGES} or fewer images.`
+    );
+  }
+  // 4. Safety checker toggle validation (should be boolean)
+  if (typeof enableSafetyChecker !== 'boolean') {
+    throw new Error(
+      "'safety checker' must be either 'on' (true) or 'off' (false). Example: safety checker on"
+    );
+  }
+  // 5. Dynamic model selection: allow any model ID, warn if not in SUPPORTED_MODELS
   const foundModel = SUPPORTED_MODELS.find((m) => m.id === model);
   if (!foundModel) {
-    throw new Error(
-      `Unsupported model. Supported models: ` +
-        SUPPORTED_MODELS.map((m) => `${m.name} (${m.id})`).join(', ')
+    console.warn(
+      `Warning: Model '${model}' is not in the recommended list. Attempting generation anyway.\n` +
+        `If you encounter errors, check the model ID at https://fal.ai/models or the fal.ai API docs.\n` +
+        `Recommended models:\n${SUPPORTED_MODELS.map(
+          (m) => `- ${m.name} (${m.id})`
+        ).join('\n')}`
     );
   }
   try {
@@ -236,9 +308,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             model: {
               type: 'string',
-              enum: SUPPORTED_MODELS.map((m) => m.id),
+              description:
+                'ID of the text-to-image model to use (any valid fal.ai model ID)',
               default: SUPPORTED_MODELS[0].id,
-              description: 'ID of the text-to-image model to use',
             },
             image_size: {
               type: 'string',
@@ -281,6 +353,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
+/**
+ * MCP server handler for the 'generate-image' tool.
+ * Routes incoming requests to generateImageFromText and returns the result or error.
+ * Only 'prompt' is required; all other parameters are optional and have sensible defaults.
+ */
 server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const { name, arguments: args } = request.params;
   if (name === 'generate-image') {
@@ -303,14 +380,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
         ],
       };
     } catch (error: any) {
+      // --- Enhanced error handling for guidance ---
+      let errorMsg = error instanceof Error ? error.message : String(error);
+      // If model error, append recommended models and link
+      if (errorMsg.match(/model/i)) {
+        errorMsg +=
+          '\n\nRecommended models:\n' +
+          SUPPORTED_MODELS.map((m) => `- ${m.name} (${m.id})`).join('\n') +
+          '\nSee all models: https://fal.ai/models';
+      }
+      // If image size error, append supported sizes
+      if (errorMsg.match(/image size|supported sizes/i)) {
+        errorMsg +=
+          '\nSupported sizes: square_hd, square, portrait_4_3, portrait_16_9, landscape_4_3, landscape_16_9';
+      }
+      // If prompt error, add example
+      if (errorMsg.match(/prompt is required/i)) {
+        errorMsg += '\nExample: generate an image of a red apple';
+      }
       return {
         isError: true,
         content: [
           {
             type: 'text',
-            text: `Error generating image: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
+            text: `Error generating image: ${errorMsg}`,
           },
         ],
       };

@@ -1,27 +1,28 @@
+[![npm version](https://img.shields.io/npm/v/mcp-fal-ai-image.svg)](https://www.npmjs.com/package/mcp-fal-ai-image) [![Node.js Version](https://img.shields.io/node/v/mcp-fal-ai-image)](https://nodejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # MCP fal.ai Image Server
 
-> **Note:** This project is exclusively for use as a Model Context Protocol (MCP) server. See [Model Context Protocol Docs](https://modelcontextprotocol.io).
+Effortlessly generate images from text prompts using [fal.ai](https://fal.ai) and the Model Context Protocol (MCP). Integrates directly with AI IDEs like Cursor and Windsurf.
 
-[![npm version](https://img.shields.io/npm/v/mcp-fal-ai-image.svg)](https://www.npmjs.com/package/mcp-fal-ai-image)
-[![Node.js Version](https://img.shields.io/node/v/mcp-fal-ai-image)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## When and Why to Use
 
-Generate images from text prompts using [fal.ai](https://fal.ai) via MCP. Designed for backend use in AI IDEs (Cursor, Windsurf, etc.) or any MCP-compatible editor.
+This tool is designed for:
+- Developers and designers who want to generate images from text prompts without leaving their IDE.
+- Rapid prototyping of UI concepts, marketing assets, or creative ideas.
+- Content creators needing unique visuals for blogs, presentations, or social media.
+- AI researchers and tinkerers experimenting with the latest fal.ai models.
+- Automating workflows that require programmatic image generation via MCP.
 
----
-
-## Features
-- Text-to-image generation with fal.ai
-- Multiple models and image sizes
-- Seamless IDE integration via MCP
-- TypeScript, MIT-licensed, open source
-
----
+Key features:
+- Supports any valid fal.ai model and all major image parameters.
+- Works out of the box with Node.js and a fal.ai API key.
+- Saves images locally with accessible file paths.
+- Simple configuration and robust error handling.
 
 ## Quick Start
-1. **Requirements:** Node.js 18+ and a [fal.ai API key](https://fal.ai)
-2. **Configure MCP Server:**
+
+1. **Requirements:** Node.js 18+, [fal.ai API key](https://fal.ai)
+2. **Configure MCP:**
    ```json
    {
      "mcpServers": {
@@ -33,68 +34,48 @@ Generate images from text prompts using [fal.ai](https://fal.ai) via MCP. Design
      }
    }
    ```
-   Replace `YOUR-FAL-AI-API-KEY` with your actual API key.
-3. **Run:** Use the `generate-image` tool from your IDE's command palette or MCP UI.
+3. **Run:** Use the `generate-image` tool from your IDE.
 
-**Troubleshooting:**
+> **💡 Typical Workflow:**
+> Describe the image you want (e.g., “generate a landscape with flying cars using model fal-ai/kolors, 2 images, landscape_16_9”) and get instant results in your IDE.
+
+### 🗨️ Example Prompts
+
+- `generate an image of a red apple`
+- `generate an image of a red apple using model fal-ai/kolors`
+- `generate 3 images of a glowing red apple in a futuristic city using model fal-ai/recraft-v3, square_hd, 40 inference steps, guidance scale 4.0, safety checker on`
+
+**Supported parameters:** prompt, model ID (any fal.ai model), number of images, image size, inference steps, guidance scale, safety checker.
+
+Images are saved locally; file paths are shown in the response. For model IDs, see [fal.ai/models](https://fal.ai/models).
+
+## Troubleshooting
+
 - `FAL_KEY environment variable is not set`: Set your fal.ai API key as above.
 - `npx` not found: Install Node.js 18+ and npm.
 
----
-
-## Usage: `generate-image` MCP Tool
-
-**Parameters:**
-- `prompt` (string, required): Image description
-- `model` (string, optional): Model ID (see below; default: `fal-ai/recraft-v3`)
-- `imageSize` (string, optional): One of `square_hd`, `square`, `portrait_4_3`, `portrait_16_9`, `landscape_4_3`, `landscape_16_9` (default: `landscape_4_3`)
-- `numImages` (int, optional): Number of images (default: 1)
-- `numInferenceSteps` (int, optional): Inference steps (default: 28)
-- `guidanceScale` (float, optional): Guidance scale (default: 3.5)
-- `enableSafetyChecker` (bool, optional): Enable safety checker (default: true)
-
-**Supported Models:**
-- fal-ai/recraft-v3
-- fal-ai/stable-diffusion-v35-large
-- fal-ai/flux-lora
-- fal-ai/flux-general
-- fal-ai/kolors
-- fal-ai/stable-cascade
-- fal-ai/aura-flow
-- fal-ai/flux-pro/v1.1
-
-**Example Request:**
-## 🔄 Example MCP Request/Response
-
-**Request:**
+<details>
+<summary>Advanced: Example MCP Request/Response</summary>
 
 ```json
 {
   "tool": "generate-image",
   "args": {
-    "prompt": "A futuristic cityscape at sunset"
+    "prompt": "A futuristic cityscape at sunset",
+    "model": "fal-ai/kolors"
   }
 }
-```
 
-**Response:**
-
-```json
+// Example response
 {
   "images": [
-    {
-      "url": "https://fal.ai/generated/abc123.png",
-      "localPath": "/home/username/Downloads/fal_ai/a_futuristic_cityscape_at_suns_2025-04-17T10-11-11-503Z_1.png"
-    },
-    {
-      "url": "https://fal.ai/generated/def456.png",
-      "localPath": "/home/username/Downloads/fal_ai/a_futuristic_cityscape_at_suns_2025-04-17T10-11-11-503Z_2.png"
-    }
+    { "url": "file:///path/to/generated_image1.png" },
+    { "url": "file:///path/to/generated_image2.png" }
   ]
 }
 ```
 
----
+</details>
 
 ## 📁 Image Output Directory
 
@@ -105,38 +86,26 @@ Generated images are saved to your local system:
 
 The full file path for each image is included in the tool's response.
 
----
+## ⚠️ Error Handling & Troubleshooting
+
+- If you specify a model ID that is not supported by fal.ai, you will receive an error from the backend. Double-check for typos or visit [fal.ai/models](https://fal.ai/models) to confirm the model ID.
+- For the latest list of models and their capabilities, refer to the [fal.ai model catalog](https://fal.ai/models) or [API docs](https://fal.ai/docs/api).
+- For other errors, consult your MCP client logs or open an issue on GitHub.
 
 ## 🤝 Contributing
 
 Contributions and suggestions are welcome! Please open issues or pull requests on [GitHub](https://github.com/madhusudan-kulkarni/mcp-fal-ai-image).
-
----
 
 ## 🔒 Security
 
 - Your API key is only used locally to authenticate with fal.ai.
 - No user data is stored or transmitted except as required by fal.ai API.
 
----
-
 ## 🔗 Links
 
 - [NPM](https://www.npmjs.com/package/mcp-fal-ai-image)
 - [GitHub](https://github.com/madhusudan-kulkarni/mcp-fal-ai-image)
 - [fal.ai](https://fal.ai)
-
----
-
-## 🧑‍💻 Advanced Usage (Manual CLI)
-
-If you want to run the MCP server manually (for development, debugging, or advanced use):
-
-```sh
-FAL_KEY=your_fal_api_key npx mcp-fal-ai-image
-```
-
----
 
 ## 🛡 License
 

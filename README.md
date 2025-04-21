@@ -84,7 +84,11 @@ Generate images from text prompts using [fal.ai](https://fal.ai) via MCP. Design
   "images": [
     {
       "url": "https://fal.ai/generated/abc123.png",
-      "localPath": "/home/username/Downloads/fal_ai/a_futuristic_cityscape_at_suns_2025-04-17T10-11-11-503Z.png"
+      "localPath": "/home/username/Downloads/fal_ai/a_futuristic_cityscape_at_suns_2025-04-17T10-11-11-503Z_1.png"
+    },
+    {
+      "url": "https://fal.ai/generated/def456.png",
+      "localPath": "/home/username/Downloads/fal_ai/a_futuristic_cityscape_at_suns_2025-04-17T10-11-11-503Z_2.png"
     }
   ]
 }

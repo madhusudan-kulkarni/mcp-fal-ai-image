@@ -6,6 +6,10 @@
 
 Effortlessly generate images from text prompts using [fal.ai](https://fal.ai) and the Model Context Protocol (MCP). Integrates directly with AI IDEs like Cursor and Windsurf.
 
+<a href="https://glama.ai/mcp/servers/@madhusudan-kulkarni/mcp-fal-ai-image">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@madhusudan-kulkarni/mcp-fal-ai-image/badge" alt="fal.ai Image Server MCP server" />
+</a>
+
 ## When and Why to Use
 
 This tool is designed for:
@@ -39,7 +43,7 @@ Key features:
 3. **Run:** Use the `generate-image` tool from your IDE.
 
 > **💡 Typical Workflow:**
-> Describe the image you want (e.g., “generate a landscape with flying cars using model fal-ai/kolors, 2 images, landscape_16_9”) and get instant results in your IDE.
+> Describe the image you want (e.g., "generate a landscape with flying cars using model fal-ai/kolors, 2 images, landscape_16_9") and get instant results in your IDE.
 
 ### 🗨️ Example Prompts
 

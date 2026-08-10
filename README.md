@@ -6,6 +6,8 @@
 
 Effortlessly generate images from text prompts using [fal.ai](https://fal.ai) and the Model Context Protocol (MCP). Integrates directly with AI IDEs like Cursor and Windsurf.
 
+> **Note:** Built in April 2025, predating fal.ai's official hosted MCP server (March 2026). Kept as a minimal, self-hosted alternative.
+
 ## When and Why to Use
 
 This tool is designed for:

@@ -1,12 +1,10 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/madhusudan-kulkarni-mcp-fal-ai-image-badge.png)](https://mseep.ai/app/madhusudan-kulkarni-mcp-fal-ai-image)
+> **ARCHIVED** — This repository is no longer maintained.
 
 [![npm version](https://img.shields.io/npm/v/mcp-fal-ai-image.svg)](https://www.npmjs.com/package/mcp-fal-ai-image) [![Node.js Version](https://img.shields.io/node/v/mcp-fal-ai-image)](https://nodejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 # MCP fal.ai Image Server
 
 Effortlessly generate images from text prompts using [fal.ai](https://fal.ai) and the Model Context Protocol (MCP). Integrates directly with AI IDEs like Cursor and Windsurf.
-
-> **Note:** Built in April 2025, predating fal.ai's official hosted MCP server (March 2026). Kept as a minimal, self-hosted alternative.
 
 ## When and Why to Use
 
